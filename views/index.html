@@ -1,0 +1,227 @@
+{{ block "index" . }}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Posts</title>
+        <link rel="stylesheet" type="text/css" href="../css/index.css">
+        <script src="https://unpkg.com/htmx.org@latest"></script>
+        <script>    
+            function loadInitialContent() {
+                document.getElementById('post-tab').click();
+            }
+            function clearForm() {
+                 document.getElementById('post-form').reset();
+            }
+            function closePopup() {
+                document.getElementById("editPost").style.display = "none";
+            }
+            function openPopup() {
+                document.getElementById("editPost").style.display = "block";
+            }
+            function setActiveTab(tabId) {
+                document.querySelectorAll('.tabs button').forEach(button => {
+                    button.classList.remove('active');
+                });
+
+                document.getElementById(tabId).classList.add('active');
+
+                if (tabId === 'post-tab') {
+                    document.getElementById('content').style.display = 'block';
+                    document.getElementById('create-draft-form').style.display = 'none';
+                } else if (tabId === 'draft-tab') {
+                    document.getElementById('content').style.display = 'block';
+                    document.getElementById('create-draft-form').style.display = 'none';
+                } else if (tabId === 'create-draft-tab') {
+                    document.getElementById('content').style.display = 'none';
+                    document.getElementById('create-draft-form').style.display = 'block';
+                }
+            }
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.tabs button').forEach(button => {
+                    button.addEventListener('click', function () {
+                        setActiveTab(this.id);
+                    });
+                });
+
+                setActiveTab('post-tab');
+            });
+            function showCreateDraftForm() {
+                document.getElementById('content').style.display = 'none';
+                document.getElementById('create-draft-form').style.display = 'block';
+            }
+            function resetView() {
+                document.getElementById('content').style.display = 'block';
+                document.getElementById('create-draft-form').style.display = 'none';
+            }
+            document.addEventListener('DOMContentLoaded', loadInitialContent);
+            function showSuccessPopup() {
+                document.getElementById('success-popup').style.display = 'block';
+            }
+            function closePopupSuccess() {
+                document.getElementById('success-popup').style.display = 'none';
+            }
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Document loaded');
+
+        function showSuccessPopup() {
+            document.getElementById('success-popup').style.display = 'block';
+        }
+
+        function closePopupSuccess() {
+            document.getElementById('success-popup').style.display = 'none';
+        }
+
+        function handleResponse(event) {
+            const xhr = event.detail.xhr;
+            if (xhr && xhr.status === 201) {
+                console.log('Status:', xhr.status);
+                showSuccessPopup();
+                clearForm();
+            }
+        }
+        document.body.addEventListener('htmx:afterRequest', handleResponse);
+    });
+    </script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="tabs" role="tablist">
+                <button id="post-tab" class="active" hx-get="/posts"
+                    hx-target="#content" role="tab" aria-selected="true">
+                    Posts
+                </button>
+                <button id="draft-tab" hx-get="/posts?published=false"
+                    hx-target="#content" role="tab" aria-selected="false">
+                    Drafts
+                </button>
+                <button id="create-draft-tab">
+                    Create Draft
+                </button>
+            </div>
+            <div id="content">
+                {{ block "post-content" . }}
+                {{ range .Posts }}
+                <div class="post" id="post-{{ .ID }}">
+                    {{ template "editPosts" . }}
+                </div>
+                {{ end }}
+                {{ template "pagination" . }}
+                {{ end }}
+            </div>
+            <div id="create-draft-form">
+                {{ template "create" . }}
+            </div>
+        </div>
+        <div id="editPost" class="popup" style="display: none;">
+            <div class="popup-content">
+                {{ template "editPostPopup" . }}
+            </div>
+        </div>
+    </body>
+    {{ end }}
+
+    {{ define "pagination" }}
+    <div id="pagination">
+        <button id="prev-button"
+            {{ if .PrevPage }}
+            hx-get="/posts?page={{ .PrevPage }}&published={{ .PublishedFilter }}"
+            {{ else }}disabled{{ end }}
+            hx-target="#content">
+            Previous
+        </button>
+        <button id="next-button"
+            {{ if .NextPage }}
+            hx-get="/posts?page={{ .NextPage }}&published={{ .PublishedFilter }}"
+            {{ else }}disabled{{ end }}
+            hx-target="#content">
+            Next
+        </button>
+    </div>
+    {{ end }}
+
+    {{ define "editPostPopup" }}
+    <form hx-put="/posts/{{.ID}}" hx-target="#post-{{.ID}}" hx-swap="innerHTML"
+        onsubmit="closePopup()">
+        <label for="postTitle">Title</label>
+        <input
+            id="postTitle"
+            name="title"
+            placeholder="Title"
+            type="text"
+            value="{{ .Title }}"
+            required />
+
+        <label for="postContent">Content</label>
+        <textarea
+            id="postContent"
+            name="content"
+            placeholder="Content"
+            required>{{ .Content }}</textarea>
+        <input type="hidden" name="published" value="{{ .Published }}" />
+        <input type="hidden" name="createdAt" value="{{ .CreatedAt }}" />
+        <button type="submit">Save</button>
+
+        <button class="delete-button"
+            hx-delete="/posts/{{ .ID }}"
+            hx-target="#post-{{ .ID }}"
+            hx-swap="outerHTML"
+            onclick="closePopup()">Delete</button>
+
+        <button type="button" onclick="closePopup()">Cancel</button>
+    </form>
+    {{ end }}
+
+    {{ define "editPosts" }}
+    <div class="details">
+        <h2 class="title">{{ .Title }}</h2>
+        <p class="content">{{ .Content }}</p>
+    </div>
+    <div class="meta">
+        <span class="date">{{ .CreatedAt }}</span>
+        <div class="buttons">
+            <button class="edit-button"
+                hx-get="/posts/{{ .ID }}"
+                hx-target="#editPost .popup-content"
+                hx-swap="innerHTML"
+                onclick="openPopup()">Edit</button>
+            {{ if not .Published }}
+            <button class="publish-button"
+                hx-put="/posts/publish/{{ .ID }}"
+                hx-vals='{"published": true}'
+                hx-target="#post-{{ .ID }}"
+                hx-swap="outerHTML">Publish</button>
+
+            <button class="delete-button"
+                hx-delete="/posts/{{ .ID }}"
+                hx-target="closest .post"
+                hx-swap="outerHTML">Delete</button>
+            {{ end }}
+        </div>
+    </div>
+    {{ end }}
+
+    {{ define "create"}}
+    <form id="post-form" hx-post="/posts" hx-swap="none"
+    hx-on="htmx:afterRequest">
+        <label for="title">Title:</label>   
+        <input id="postTitle" name="title" placeholder="Title" type="text"
+            required />
+        <label for="content">Content:</label>
+        <textarea id="postContent" name="content" placeholder="Content"
+            required></textarea>
+
+        <div class="button-group">
+            <button type="submit" name="published" value="true">Publish
+                Now</button>
+            <button type="submit" name="published" value="false">Save</button>
+            <button type="button" onclick="clearForm()">Cancel</button>
+        </div>
+    </form>
+
+    <div id="success-popup" style="display: none;">
+        <p>สร้างสำเร็จ!</p>
+        <button onclick="closePopupSuccess()">close</button>
+    </div>
+    {{ end }}

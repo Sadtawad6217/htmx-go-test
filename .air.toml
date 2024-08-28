@@ -1,0 +1,93 @@
+# Root directory to watch files
+root = "."
+testdata_dir = "testdata"
+tmp_dir = "tmp"
+
+[build]
+  # Binary output file
+  bin = "tmp/main.exe"
+  
+  # Command to build the Go application
+  cmd = "go build -o ./tmp/main.exe cmd/main.go"
+  
+  # Arguments to pass to the binary (empty in this case)
+  args_bin = []
+  
+  # Delay before starting build
+  delay = 0
+  
+  # Directories to exclude from the watch
+  exclude_dir = ["node_modules", "assets", "tmp", "vendor", "testdata"]
+  
+  # Files to exclude from the watch
+  exclude_file = []
+  
+  # Regex patterns to exclude certain files (e.g., test files)
+  exclude_regex = ["_test.go"]
+  
+  # Exclude files that haven't changed
+  exclude_unchanged = false
+  
+  # Follow symlinks
+  follow_symlink = false
+  
+  # Full binary path, optional
+  full_bin = ""
+  
+  # Directories to include in the watch
+  include_dir = ["cmd", "views", "pkg"]
+  
+  # File extensions to include in the watch
+  include_ext = ["go", "html"]
+  
+  # Specific files to include (empty in this case)
+  include_file = []
+  
+  # Delay before killing the running binary
+  kill_delay = "0s"
+  
+  # Log errors to this file
+  log = "build-errors.log"
+  
+  # Use polling instead of file system notifications
+  poll = false
+  
+  # Polling interval in milliseconds
+  poll_interval = 0
+  
+  # Rerun the command on file change, even if no build occurred
+  rerun = false
+  
+  # Delay before rerunning the command
+  rerun_delay = 500
+  
+  # Send interrupt signal to the running binary
+  send_interrupt = false
+  
+  # Stop the process on error
+  stop_on_error = false
+
+[color]
+  app = ""
+  build = "yellow"
+  main = "magenta"
+  runner = "green"
+  watcher = "cyan"
+
+[log]
+  # Only show the main process output
+  main_only = false
+  
+  # Include timestamp in logs
+  time = false
+
+[misc]
+  # Clean up temporary files on exit
+  clean_on_exit = false
+
+[screen]
+  # Clear the screen on each rebuild
+  clear_on_rebuild = false
+  
+  # Keep the scroll position in the terminal
+  keep_scroll = true

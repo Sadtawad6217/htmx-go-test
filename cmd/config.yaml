@@ -1,0 +1,9 @@
+# database:
+#   host: dev.opensource-technology.com
+#   port: 5523
+#   user: posts
+#   password: 38S2GPNZut4Tmvan
+#   dbname: posts
+#   sslmode: disable
+database:
+  url: postgres://posts:38S2GPNZut4Tmvan@dev.opensource-technology.com:5523/posts?sslmode=disable
